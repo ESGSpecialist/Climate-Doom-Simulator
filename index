@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climate Doom Simulator - ถ้าโลกเดือด คุณจะขิตท่าไหน?</title>
+    
+    <!-- Google Fonts: Kanit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Kanit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        .glow-red {
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+        }
+        .glow-emerald {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-slate-100 flex items-center justify-center p-4 md:p-8 font-sans">
+
+    <!-- Game Container -->
+    <div class="w-full max-w-2xl bg-slate-900/80 backdrop-blur-md rounded-3xl border border-red-500/20 shadow-2xl p-6 md:p-8 overflow-hidden relative">
+        
+        <!-- Lava Top Bar Decoration -->
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-600 via-orange-500 to-amber-500"></div>
+
+        <!-- 1. Intro Screen -->
+        <div id="screen-intro" class="space-y-6 text-center py-6">
+            <div class="inline-flex items-center justify-center p-4 bg-red-500/10 rounded-full border border-red-500/30 text-red-500 mb-2 animate-pulse">
+                <i data-lucide="flame" class="w-12 h-12"></i>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-400 to-amber-400 tracking-tight">
+                CLIMATE DOOM SIMULATOR
+            </h1>
+            <p class="text-xl font-bold text-slate-200">ถ้าโลกเดือดขึ้น... คุณจะ "ขิต" แบบไหน? 💀🌎</p>
+            <p class="text-sm text-slate-400 max-w-md mx-auto">
+                มาร่วมจำลองอนาคตเมื่ออุณหภูมิโลกพุ่งทะยาน ตอบคำถามตามสัญชาตญาณเอาตัวรอด แล้วมาดู "ใบมรณบัตรจำลอง" ของตัวคุณในวันสิ้นโลก!
+            </p>
+
+            <div class="space-y-4 max-w-md mx-auto pt-4">
+                <div class="space-y-2 text-left">
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400">ชื่อเล่นของคุณ</label>
+                    <input type="text" id="username" placeholder="ระบุชื่อของคุณ..." class="w-full p-3.5 bg-slate-950/60 border border-slate-700 rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none text-slate-100 font-medium">
+                </div>
+
+                <div class="space-y-2 text-left">
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400">เลือกไลฟ์สไตล์ (Archetype)</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="selectArchetype('gamer')" id="arch-gamer" class="p-3 bg-slate-950/40 border border-slate-800 rounded-xl hover:border-red-500/50 hover:bg-slate-950/60 text-left transition-all text-xs font-semibold flex items-center gap-2">
+                            🎮 สายแอร์ฉ่ำสิงหน้าจอ
+                        </button>
+                        <button onclick="selectArchetype('boba')" id="arch-boba" class="p-3 bg-slate-950/40 border border-slate-800 rounded-xl hover:border-red-500/50 hover:bg-slate-950/60 text-left transition-all text-xs font-semibold flex items-center gap-2">
+                            🧋 สายหวานรักชาไข่มุก
+                        </button>
+                        <button onclick="selectArchetype('worker')" id="arch-worker" class="p-3 bg-slate-950/40 border border-slate-800 rounded-xl hover:border-red-500/50 hover:bg-slate-950/60 text-left transition-all text-xs font-semibold flex items-center gap-2">
+                            💼 คนเมืองสู้ชีวิตตัวจริง
+                        </button>
+                        <button onclick="selectArchetype('camper')" id="arch-camper" class="p-3 bg-slate-950/40 border border-slate-800 rounded-xl hover:border-red-500/50 hover:bg-slate-950/60 text-left transition-all text-xs font-semibold flex items-center gap-2">
+                            🏕️ สายแคมป์ลุยธรรมชาติ
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="startGame()" class="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-all transform hover:-translate-y-0.5 text-lg mt-4 flex items-center justify-center gap-2">
+                    <i data-lucide="play" class="w-5 h-5"></i>
+                    เริ่มเกมจำลองความขิต!
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. Quiz / Scenario Screen -->
+        <div id="screen-quiz" class="hidden space-y-6">
+            <!-- Game Progress & Temperature Meter -->
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <span id="question-number" class="text-xs font-bold text-red-500 uppercase tracking-widest">SCENARIO 1 / 5</span>
+                    <h3 id="scenario-title" class="text-base font-bold text-slate-300">ระดับอุณหภูมิขยับขึ้น</h3>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs text-slate-400 block font-medium">สภาวะโลกเดือด</span>
+                    <span id="temp-gauge" class="text-xl font-black text-orange-500">+1.5°C</span>
+                </div>
+            </div>
+
+            <!-- Main Question & Story Context -->
+            <div class="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-3">
+                <div class="inline-flex p-2 bg-red-500/10 rounded-lg text-red-400" id="scenario-icon-container">
+                    <i data-lucide="thermometer" id="scenario-icon"></i>
+                </div>
+                <p id="scenario-text" class="text-base md:text-lg font-medium leading-relaxed text-slate-200">
+                    คำถามจำลองสถานการณ์...
+                </p>
+            </div>
+
+            <!-- Answer Options -->
+            <div class="space-y-3" id="options-container">
+                <!-- Buttons will be generated dynamically -->
+            </div>
+        </div>
+
+        <!-- 3. Result Screen (Death Certificate) -->
+        <div id="screen-result" class="hidden space-y-6 fade-in">
+            <div class="text-center space-y-2">
+                <span class="text-emerald-400 text-xs font-extrabold uppercase tracking-widest flex items-center justify-center gap-1">
+                    <i data-lucide="shield-alert" class="w-4 h-4"></i> SIMULATION COMPLETED
+                </span>
+                <h2 class="text-2xl md:text-3xl font-black text-slate-100">ใบมรณบัตรจำลองในโลกเดือด 📜</h2>
+                <p class="text-sm text-slate-400">นี่คือสาเหตุการสิ้นชีพของคุณ หากเราไม่ร่วมมือกันลด Emission ตั้งแต่วันนี้</p>
+            </div>
+
+            <!-- Certificate Box -->
+            <div class="bg-white text-slate-900 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xl relative overflow-hidden border-4 border-double border-slate-300">
+                <!-- Certificate Decorative Watermark -->
+                <div class="absolute -right-8 -bottom-8 text-slate-100 opacity-80 pointer-events-none transform rotate-12">
+                    <i data-lucide="skull" class="w-48 h-48 text-slate-200"></i>
+                </div>
+
+                <div class="text-center border-b-2 border-slate-200 pb-4">
+                    <p class="text-xs font-bold tracking-widest text-slate-500 uppercase">FUTURE DEATH CERTIFICATE</p>
+                    <h3 class="text-2xl font-extrabold text-red-600 mt-1" id="cert-cause">สิ้นชีพเพราะขาดชานมไข่มุกเฉียบพลัน</h3>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 text-xs md:text-sm">
+                    <div class="space-y-1">
+                        <span class="text-slate-400 block font-medium">ผู้วายชนม์:</span>
+                        <span class="font-bold text-slate-800 text-base" id="cert-name">คุณสมชาย</span>
+                    </div>
+                    <div class="space-y-1">
+                        <span class="text-slate-400 block font-medium">ไลฟ์สไตล์เดิม:</span>
+                        <span class="font-bold text-slate-800 text-base" id="cert-arch">สายแอร์ฉ่ำสิงหน้าจอ</span>
+                    </div>
+                    <div class="space-y-1">
+                        <span class="text-slate-400 block font-medium">ปีที่ขิต (พ.ศ.):</span>
+                        <span class="font-bold text-slate-800 text-base" id="cert-year">2588</span>
+                    </div>
+                    <div class="space-y-1">
+                        <span class="text-slate-400 block font-medium">อุณหภูมิโลกวิกฤต:</span>
+                        <span class="font-bold text-red-600 text-base font-black" id="cert-temp">+3.0 °C</span>
+                    </div>
+                </div>
+
+                <!-- Scientific Explanation -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 relative z-10">
+                    <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                        <i data-lucide="book-open" class="w-4 h-4 text-slate-600"></i> ชันสูตรทางวิทยาศาสตร์ (จริง):
+                    </h4>
+                    <p id="cert-explanation" class="text-slate-600 text-xs md:text-sm leading-relaxed font-normal">
+                        คำอธิบายทางวิทยาศาสตร์ที่สอดคล้องกับเหตุการณ์จริง...
+                    </p>
+                </div>
+
+                <!-- Survival Score -->
+                <div class="text-center space-y-1 pt-2">
+                    <span class="text-xs text-slate-400 block font-semibold">โอกาสรอดชีวิตของคุณในอนาคต:</span>
+                    <div class="text-4xl font-black text-red-600" id="cert-rate">12%</div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="space-y-3">
+                <button onclick="shareResult()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 text-base">
+                    <i data-lucide="share-2" class="w-5 h-5"></i>
+                    คัดลอกผลลัพธ์ไปโพสต์ลง Facebook!
+                </button>
+                
+                <button onclick="resetGame()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-3.5 rounded-2xl transition-all text-sm flex items-center justify-center gap-2">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    ลองกู้โลกใหม่อีกครั้ง
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Alert Toast (Hidden by default) -->
+    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl border border-emerald-500 flex items-center gap-2 text-sm font-semibold opacity-0 transition-opacity duration-300 pointer-events-none z-50">
+        <i data-lucide="check-circle" class="text-emerald-400"></i>
+        <span id="toast-text">คัดลอกผลลัพธ์เรียบร้อย!</span>
+    </div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Game State Variables
+        let nickname = "";
+        let archetype = "gamer";
+        let currentStep = 0;
+        let score = 0;
+
+        let selectedArchBtn = null;
+
+        const scenarios = [
+            {
+                temp: "+1.5°C",
+                title: "วิกฤตคลื่นความร้อนระลอกแรก",
+                icon: "thermometer",
+                text: "วันที่ค่าไฟในกรุงเทพฯ พุ่งทะยานเฉียด 10,000 บาทต่อเดือน เพราะภายนอกร้อนระอุแทบละลาย แอร์ที่บ้านคุณร้องขอชีวิตด้วยการส่งเสียงแปลกๆ คุณแก้ปัญหานี้อย่างไร?",
+                options: [
+                    { text: "❄️ เปิดแอร์ต่ำสุด 18 องศาแล้วคุมโปงสู้บิลค่าไฟ", score: 0 },
+                    { text: "🍃 ปรับแอร์ 26 องศาคู่กับพัดลม และล้างแอร์สม่ำเสมอ", score: 2 },
+                    { text: "🛍️ หนีไปนอนตากแอร์เล่นที่ห้างทั้งวัน ประหยัดไฟบ้านเรา", score: 1 }
+                ]
+            },
+            {
+                temp: "+2.0°C",
+                title: "วิกฤตอุณหภูมิกระเปาะเปียก (Wet-Bulb)",
+                icon: "wind",
+                text: "อุณหภูมิความชื้นสัมพัทธ์พุ่งแตะวิกฤตระดับอันตราย แอร์ที่บ้านคุณทำงานหนักจน 'คอมเพรสเซอร์ระเบิด' ทำให้ภายในห้องร้อนระอุและเหนียวตัวอย่างรุนแรง!",
+                options: [
+                    { text: "🥵 ถอดเสื้อ นั่งตากพัดลมเฉยๆ ในบ้าน เดี๋ยวก็คงปรับตัวได้เอง", score: 0 },
+                    { text: "💧 ชุบน้ำเย็นเช็ดตัวบ่อยๆ หลีกเลี่ยงกิจกรรมออกแรง และรีบเรียกช่างแอร์", score: 2 },
+                    { text: "🚗 สตาร์ทรถยนต์เปิดแอร์ฉ่ำ นอนรอในรถจนกว่าช่างแอร์จะมา", score: 0 }
+                ]
+            },
+            {
+                temp: "+2.5°C",
+                title: "วิกฤตห่วงโซ่อาหารล่มสลาย",
+                icon: "cup-straw",
+                text: "สภาพอากาศที่แห้งแล้งและร้อนจัด ทำให้พืชไร่ ต้นชา อ้อย และแหล่งปศุสัตว์เสียหายหนัก ชานมไข่มุกและอาหารเกรดดีปรับราคาสูงขึ้นแก้วละ 400 บาท!",
+                options: [
+                    { text: "🥤 รูดบัตรเครดิตซื้อดื่มต่อ ร่างกายขาดน้ำตาลไม่ได้ ขิตเป็นขิต!", score: 0 },
+                    { text: "🥬 หันมาทานอาหารโลคอลตามฤดูกาล ลดเนื้อสัตว์ใหญ่ และเริ่มหัดปลูกพืชกินเอง", score: 2 },
+                    { text: "🥫 ประทังชีวิตด้วยอาหารกระป๋องสำเร็จรูปและบะหมี่สำเร็จรูปวนไป", score: 1 }
+                ]
+            },
+            {
+                temp: "+3.0°C",
+                title: "วิกฤตน้ำทะเลหนุนสูงและแมลงพาหะ",
+                icon: "droplets",
+                text: "น้ำทะเลหนุนสูงถาวรจนกรุงเทพฯ ชั้นในกลายเป็นเวนิส แถมอุณหภูมิที่ร้อนชื้นยังช่วยให้ 'ยุงยักษ์โบราณ' ที่ฟื้นจากชั้นดินน้ำแข็งขั้วโลกละลาย ออกมาอาละวาด!",
+                options: [
+                    { text: "🛶 พายเรือชิลๆ ไปทำงาน และทายากันยุงแบบออร์แกนิกวนไป", score: 1 },
+                    { text: "🦟 หนีขึ้นไปอยู่ชั้นสองของบ้าน สู้รบกับกองทัพยุงโบราณด้วยสเปรย์สารเคมี", score: 0 },
+                    { text: "⛰️ ย้ายถิ่นฐานขึ้นไปอยู่จังหวัดแถบภูเขาที่มีการจัดการน้ำและมลพิษที่ดีกว่า", score: 2 }
+                ]
+            },
+            {
+                temp: "+4.0°C",
+                title: "วิกฤตการณ์โลกเดือดขั้นสุดยอด",
+                icon: "shield-alert",
+                text: "อารยธรรมมนุษย์กำลังเผชิญกับการปรับเปลี่ยนครั้งใหญ่ ทรัพยากรและอาหารเริ่มขาดแคลนอย่างหนัก ทั่วโลกมีมาตรการ Carbon Tax สุดโหดสำหรับคนที่ยังปล่อยมลพิษ!",
+                options: [
+                    { text: "💥 ปล่อยจอย! ชีวิตพังหมดแล้ว ใช้ทรัพยากรที่เหลือให้สะใจไปเลย", score: 0 },
+                    { text: "🤝 เข้าร่วมชุมชนคาร์บอนต่ำ ช่วยกันแบ่งปันอาหารพลังงานแสงอาทิตย์เพื่อความอยู่รอด", score: 2 },
+                    { text: "🛡️ กักตุนอาหาร ซื้อปืนมาเฝ้าบ้าน ป้องกันไม่ให้ใครมาแย่งชิงพลังงานของเรา", score: 0 }
+                ]
+            }
+        ];
+
+        const codProfiles = {
+            gamer: [
+                {
+                    cause: "ขิตคากองบิลค่าไฟและแอร์ระเบิด ⚡🥵",
+                    year: "2585",
+                    temp: "+2.5°C",
+                    explanation: "คุณพยายามสู้กับภาวะโลกเดือดด้วยการเปิดแอร์อัดกระหน่ำขั้นสุดตลอด 24 ชั่วโมง จนกระทั่งระบบสายส่งไฟฟ้า (Grid Collapse) ล่มสลาย แอร์ดับในวันที่อุณหภูมิกระเปาะเปียกภายนอกแตะ 36°C ร่างกายของคุณระบายความร้อนไม่ได้ เกิดฮีทสโตรกเฉียบพลันคากองการ์ดจอและบิลค่าไฟสูงลิ่ว!"
+                },
+                {
+                    cause: "สิ้นชีพเพราะขาดอากาศหายใจในห้องกระจก 💨🔒",
+                    year: "2593",
+                    temp: "+3.5°C",
+                    explanation: "คุณหลบภัยอยู่ในห้องเล่นเกมปิดตาย แต่เพราะระบบหมุนเวียนอากาศล้มเหลวและอุณหภูมิภายนอกที่สูงขึ้นเรื่อยๆ ทำให้เครื่องฟอกอากาศและระบบปรับอากาศรับแรงกดดันไม่ไหว เกิดการขัดข้องทางเทคนิคอย่างรุนแรง"
+                }
+            ],
+            boba: [
+                {
+                    cause: "สิ้นชีพเพราะภาวะขาดน้ำตาลและชานมเฉียบพลัน 🧋💔",
+                    year: "2582",
+                    temp: "+2.0°C",
+                    explanation: "วิกฤตภัยแล้งรุนแรงทำลายล้างแหล่งเพาะปลูกต้นชาและต้นอ้อยทั่วโลก ชานมไข่มุกกลายเป็นของหายากราคากล่องละพันบาท คุณพยายามรูดบัตรเครดิตจนหนี้ล้นพ้นตัว สุดท้ายตรอมใจสิ้นชีพด้วยภาวะลงแดงขาดสารชานมไข่มุกมาหล่อเลี้ยงจิตใจ!"
+                },
+                {
+                    cause: "ตกเป็นเหยื่อไข้ป่าสายพันธุ์ล้านปี 🦟🦠",
+                    year: "2595",
+                    temp: "+4.0°C",
+                    explanation: "เมื่อโลกเดือดชื้นขึ้น ยุงยักษ์สายพันธุ์โบราณที่ฟื้นคืนชีพจากการละลายของธารน้ำแข็งขั้วโลกได้บุกเข้าเขตราตรีเพื่อหาแหล่งอาหาร คุณถูกกัดขณะกำลังเดินตามหาร้านชานมไข่มุกแก้วสุดท้าย สิ้นชีพด้วยไข้ป่าโบราณที่ไม่มีวัคซีนตัวใดรักษาได้ในปัจจุบัน"
+                }
+            ],
+            worker: [
+                {
+                    cause: "เป็นลมแดดล้มพับคาสะพานลอยกรุงเทพฯ 🚶‍♂️🔥",
+                    year: "2580",
+                    temp: "+1.5°C",
+                    explanation: "คุณต้องเดินทางฝ่าความร้อนสุดขีดเพื่อไปทำงานท่ามกลางฝุ่นละอองสะสมและเกาะความร้อนเมือง (Urban Heat Island Effect) ร่างกายสะสมความร้อนสูงเกินขีดจำกัดขณะเดินขึ้นสะพานลอยพอดิบพอดี สิ้นใจอย่างฮีโร่ผู้สู้ชีวิตแต่โดนสภาวะภูมิอากาศแปรปรวนสู้กลับ!"
+                },
+                {
+                    cause: "จมน้ำป๋อมแป๋มคาสมาร์ทโฮมชั้น 1 🌊🏠",
+                    year: "2590",
+                    temp: "+3.0°C",
+                    explanation: "ระดับน้ำทะเลหนุนสูงถาวรประกอบกับพายุหมุนเขตร้อนที่ทวีความรุนแรงอย่างบ้าคลั่ง ซัดพัดผ่านพังคันกั้นน้ำกรุงเทพฯ จนจมบาดาลถาวร คุณที่พยายามสู้ชีวิตนอนหลับพักผ่อนหลังจากลุยงานหนัก ตื่นขึ้นมาอีกทีก็พบว่าตัวเองลอยอยู่ติดเพดานห้องนอนเรียบร้อยแล้ว"
+                }
+            ],
+            camper: [
+                {
+                    cause: "ขิตเพราะพายุลูกเห็บยักษ์ซัดเต็นท์ทะลu 🏕️☄️",
+                    year: "2588",
+                    temp: "+2.5°C",
+                    explanation: "ความร้อนจัดสะสมในชั้นบรรยากาศทำให้พยากรณ์อากาศล้มเหลว เกิดพายุฤดูร้อนและพายุลูกเห็บขนาดเท่าลูกมะพร้าวตกลงมาอย่างฉับพลันกลางจุดกางเต็นท์ป่าดิบชื้น เต็นท์พรีเมียมของคุณรับน้ำหนักไม่ไหว ขิตอย่างสงบพร้อมกับเสียงสวดส่งวิญญาณจากเหล่าจักจั่นป่า"
+                },
+                {
+                    cause: "โดนสารพิษและสปอร์เชื้อราโบราณสอยร่วง 🍄☠️",
+                    year: "2598",
+                    temp: "+4.0°C",
+                    explanation: "การที่ระบบนิเวศป่าไม้ดั้งเดิมเหี่ยวเฉาแห้งแล้งและพังทลายอย่างถาวรจากสภาพภูมิอากาศสุดขั้ว ทำให้เชื้อราและเห็ดมีพิษโบราณที่ไม่เคยพบมาก่อนเจริญเติบโตอย่างรวดเร็ว คุณสูดดมสปอร์พิษเข้าไปขณะกำลังเดินทางศึกษาธรรมชาติ ขิตในอ้อมกอดของธรรมชาติป่าไม้เสื่อมโทรม"
+                }
+            ]
+        };
+
+        function selectArchetype(type) {
+            archetype = type;
+            if (selectedArchBtn) {
+                selectedArchBtn.classList.remove('border-red-500', 'bg-red-500/10', 'glow-red');
+                selectedArchBtn.classList.add('border-slate-800', 'bg-slate-950/40');
+            }
+            selectedArchBtn = document.getElementById('arch-' + type);
+            selectedArchBtn.classList.remove('border-slate-800', 'bg-slate-950/40');
+            selectedArchBtn.classList.add('border-red-500', 'bg-red-500/10', 'glow-red');
+        }
+
+        function startGame() {
+            nickname = document.getElementById('username').value.trim() || "ผู้รอดชีวิตนิรนาม";
+            document.getElementById('screen-intro').classList.add('hidden');
+            document.getElementById('screen-quiz').classList.remove('hidden');
+            currentStep = 0;
+            score = 0;
+            showScenario();
+        }
+
+        function showScenario() {
+            const data = scenarios[currentStep];
+            document.getElementById('question-number').innerText = `SCENARIO ${currentStep + 1} / 5`;
+            document.getElementById('scenario-title').innerText = data.title;
+            document.getElementById('temp-gauge').innerText = data.temp;
+            document.getElementById('scenario-text').innerText = data.text;
+            
+            const iconContainer = document.getElementById('scenario-icon-container');
+            iconContainer.innerHTML = `<i data-lucide="${data.icon}" class="w-8 h-8"></i>`;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            data.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full p-4 bg-slate-950/40 hover:bg-slate-950/80 border border-slate-800 hover:border-red-500/50 rounded-2xl text-left transition-all text-sm font-medium flex items-center justify-between group";
+                btn.innerHTML = `
+                    <span>${opt.text}</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 group-hover:text-red-500 transition-colors"></i>
+                `;
+                btn.onclick = () => selectOption(opt.score);
+                optionsContainer.appendChild(btn);
+            });
+            
+            lucide.createIcons();
+        }
+
+        function selectOption(optScore) {
+            score += optScore;
+            currentStep++;
+            if (currentStep < scenarios.length) {
+                showScenario();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('screen-quiz').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+
+            const index = score >= 5 ? 1 : 0;
+            const cod = codProfiles[archetype][index];
+
+            const archNames = {
+                gamer: "🎮 สายแอร์ฉ่ำสิงหน้าจอ",
+                boba: "🧋 สายหวานรักชาไข่มุก",
+                worker: "💼 คนเมืองสู้ชีวิตตัวจริง",
+                camper: "🏕️ สายแคมป์ลุยธรรมชาติ"
+            };
+
+            document.getElementById('cert-cause').innerText = cod.cause;
+            document.getElementById('cert-name').innerText = nickname;
+            document.getElementById('cert-arch').innerText = archNames[archetype];
+            document.getElementById('cert-year').innerText = cod.year;
+            document.getElementById('cert-temp').innerText = cod.temp;
+            document.getElementById('cert-explanation').innerText = cod.explanation;
+            
+            const finalRate = Math.min(15 + (score * 8), 85) - (archetype === 'gamer' ? 5 : 0);
+            document.getElementById('cert-rate').innerText = finalRate + "%";
+            
+            const rateEl = document.getElementById('cert-rate');
+            if (finalRate < 30) {
+                rateEl.className = "text-4xl font-black text-red-600";
+            } else if (finalRate < 60) {
+                rateEl.className = "text-4xl font-black text-amber-500";
+            } else {
+                rateEl.className = "text-4xl font-black text-emerald-500";
+            }
+        }
+
+        function shareResult() {
+            const cause = document.getElementById('cert-cause').innerText;
+            const year = document.getElementById('cert-year').innerText;
+            const temp = document.getElementById('cert-temp').innerText;
+            const rate = document.getElementById('cert-rate').innerText;
+            const arch = document.getElementById('cert-arch').innerText;
+
+            const textToCopy = `💀 [Climate Doom Simulator] ถ้าโลกเดือด... ผม/ฉันจะขิตท่าไหน?\n\n` +
+                               `👤 ผู้วายชนม์: ${nickname}\n` +
+                               `🧬 ไลฟ์สไตล์: ${arch}\n` +
+                               `🪦 สาเหตุการขิต: ${cause}\n` +
+                               `📅 สิ้นชีพปี พ.ศ.: ${year} (ที่อุณหภูมิโลกวิกฤต ${temp})\n` +
+                               `🛡️ โอกาสอยู่รอดในอนาคต: ${rate}\n\n` +
+                               `ถ้าไม่อยากให้คำพยากรณ์สุดดาร์กนี้เกิดขึ้นจริง! มาร่วมเรียนรู้การคำนวณและลดคาร์บอนฟุตพริ้นท์ตามมาตรฐาน อบก. (TGO) ได้ที่เพจของเราเลยครับ 🌱🌎✨`;
+
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = textToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showToast("คัดลอกผลลัพธ์เพื่อนำไปโพสต์ Facebook เรียบร้อยแล้ว! 🎉");
+            } catch (err) {
+                showToast("เกิดข้อผิดพลาดในการคัดลอกข้อความ");
+            }
+            document.body.removeChild(tempTextArea);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-text').innerText = message;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        function resetGame() {
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-intro').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            if (selectedArchBtn) {
+                selectedArchBtn.classList.remove('border-red-500', 'bg-red-500/10', 'glow-red');
+                selectedArchBtn.classList.add('border-slate-800', 'bg-slate-950/40');
+                selectedArchBtn = null;
+            }
+        }
+
+        selectArchetype('gamer');
+    </script>
+</body>
+</html>
